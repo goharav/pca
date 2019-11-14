@@ -61,3 +61,61 @@ fviz_contrib(p_comp, choice='var', axes=1)
 fviz_contrib(p_comp, choice='var', axes=2)
 fviz_contrib(p_comp, choice='var', axes=1:2)
 fviz_pca_var(p_comp, col.var = 'contrib')
+
+#constructing latent variable 
+df <- read.csv("Countries.csv")
+str(df)
+df1 <- data.frame(Country = df[,2], df[,grepl(".Freedom", colnames(df))]) 
+head(df1)
+df[,grepl(".Freedom", colnames(df))]
+df[,2]
+df1 <- df1[complete.cases(df1)]
+df1           
+rownames(df1) <- df1$Country 
+head(df1)
+str(df1)
+str(df1[,-1])
+p_comp <- prcomp(df1[,-1], scale. = T)
+summary(p_comp)
+# First principal component explain 60% of total variation
+screeplot(p_comp, type = 'l')
+fviz_pca_ind(p_comp)
+# extract only first component
+p_comp <- prcomp(df1[,-1], scale. = T, rank. = 1)
+p_comp <- prcomp(df1[,-1], scale. = T)
+p_comp
+df1$Score <- as.numeric(p_comp$x)
+df1$FreedomIndex <- (df1$Score - min(df1$Score))/(max(df1$Score)-min(df1$Score))
+ggplot(df1, aes(x = FreedomIndex)) + geom_histogram()
+cor <- cor(df1[,c(colnames(df1)[grepl(".Freedom", colnames(df1))], "FreedomIndex")])
+cor
+data.frame(cor = cor[-nrow(cor), "FreedomIndex"]) 
+
+# ranking
+df1$FreedomIndexRank <- rank(df1$FreedomIndex)
+df1$FreedomIndexRank
+df1$FreedomIndexRank <- nrow(df1) - df1$FreedomIndexRank +1
+df1$FreedomIndexRank
+df1 <- df1[order(df1$FreedomIndexRank), ]
+rownames(df1) <- NULL
+head(df1[, c("Country", "Score", "FreedomIndex", "FreedomIndexRank")], 10) 
+
+
+
+## tsne
+install.packages('Rtsne')
+library(Rtsne)
+library(ggplot2)
+set.seed(1)
+country <- read.csv('Countries.csv')
+df0 <- country[complete.cases(country),]
+
+df1 <- df0[-c(1:4)]
+df1
+tsne <- Rtsne(df1, dims=2)
+tsne$Y
+df2 <- data.frame(Countries=df0$Country.Name, tsne$Y)
+df2
+ggplot(df2, aes(x = X1, y = X2, label = Countries)) +
+  geom_point() + geom_text(aes(label = Countries), hjust = 0, vjust = 0) +
+  xlab("tSNE dimension 1") + ylab("tSNE dimension 2")
