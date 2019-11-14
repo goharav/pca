@@ -25,7 +25,7 @@ d1 <- data.frame(consumption[,c("bread_3_rice.kg", "bread_5_macaroni.kg")], p_co
 head(d1)
 summary(d1)
 # PC1 and PC2 means are zero, because of scalling
-
+#new
 # rotation
 p_comp$rotation
 head(d1)
